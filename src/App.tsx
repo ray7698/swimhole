@@ -1,4 +1,5 @@
 import {type ReactNode, useEffect, useMemo, useState} from 'react';
+import MonetagBodyTag from './components/MonetagBodyTag';
 import PropellerAdSlot from './components/PropellerAdSlot';
 import type {Difficulty, SwimHole} from './types/swim-hole';
 import {
@@ -43,11 +44,9 @@ const runtimeEnv =
     ? import.meta.env
     : ({} as Record<string, string | undefined>);
 const adsConfig = {
-  homeBanner: runtimeEnv.VITE_PROPELLER_HOME_BANNER_SRC,
-  directoryTop: runtimeEnv.VITE_PROPELLER_DIRECTORY_TOP_SRC,
-  directoryInline: runtimeEnv.VITE_PROPELLER_DIRECTORY_INLINE_SRC,
-  detailBanner: runtimeEnv.VITE_PROPELLER_DETAIL_SRC,
-  mobileSticky: runtimeEnv.VITE_PROPELLER_STICKY_SRC,
+  bannerSrc: runtimeEnv.VITE_MONETAG_BANNER_SRC,
+  bodyTagSrc: runtimeEnv.VITE_MONETAG_BODY_TAG_SRC,
+  bodyTagZone: runtimeEnv.VITE_MONETAG_BODY_TAG_ZONE,
 };
 
 function getSiteUrl() {
@@ -198,40 +197,6 @@ function SwimCardGrid({
       ))}
     </div>
   );
-}
-
-function SwimCardGridWithInlineAds({
-  holes,
-  onSelect,
-}: {
-  holes: SwimHole[];
-  onSelect: (hole: SwimHole) => void;
-}) {
-  const blocks: ReactNode[] = [];
-
-  holes.forEach((hole, index) => {
-    blocks.push(
-      <div key={hole.id}>
-        <SwimCard hole={hole} onSelect={onSelect} />
-      </div>,
-    );
-
-    const shouldInsertAd = (index + 1) % 6 === 0 && index < holes.length - 1;
-    if (shouldInsertAd) {
-      blocks.push(
-        <div className="grid-ad-span" key={`ad-${hole.id}`}>
-          <PropellerAdSlot
-            className="propeller-inline"
-            label="Directory inline"
-            minHeight={180}
-            scriptSrc={adsConfig.directoryInline}
-          />
-        </div>,
-      );
-    }
-  });
-
-  return <div className="grid grid-3">{blocks}</div>;
 }
 
 export default function App({initialHoles = [], initialPath}: AppProps) {
@@ -410,6 +375,11 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
         </div>
       </header>
 
+      <MonetagBodyTag
+        scriptSrc={adsConfig.bodyTagSrc}
+        zoneId={adsConfig.bodyTagZone}
+      />
+
       <main id="app">
         {catalogError ? (
           <div className="container mt-4">
@@ -450,9 +420,9 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
           <div className="container">
             <PropellerAdSlot
               className="propeller-hero"
-              label="Homepage hero"
+              label="Top banner"
               minHeight={160}
-              scriptSrc={adsConfig.homeBanner}
+              scriptSrc={adsConfig.bannerSrc}
             />
           </div>
 
@@ -492,12 +462,6 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
         <div className={`page ${route.page === 'directory' && (!catalogLoading || holes.length > 0) ? '' : 'hidden'}`}>
           <div className="container section">
             <h1 className="mb-4">All Swimming Holes</h1>
-            <PropellerAdSlot
-              className="propeller-directory-top"
-              label="Directory top"
-              minHeight={190}
-              scriptSrc={adsConfig.directoryTop}
-            />
             <div className="filters">
               <div className="filter-group" style={{flex: 1, minWidth: 200}}>
                 <input
@@ -544,7 +508,7 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
             </div>
 
             {catalogLoading ? <div className="status-banner">Refreshing catalog...</div> : null}
-            <SwimCardGridWithInlineAds holes={filteredHoles} onSelect={(selected) => navigate('detail', selected)} />
+            <SwimCardGrid holes={filteredHoles} onSelect={(selected) => navigate('detail', selected)} />
             {filteredHoles.length === 0 ? (
               <div className="text-center mt-4" style={{color: 'var(--gray-500)'}}>
                 No swimming holes found matching your criteria.
@@ -666,14 +630,6 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
                     <p>{selectedHole.lastVerified || 'Not set yet'}</p>
                   </div>
                 </div>
-
-                <PropellerAdSlot
-                  className="propeller-detail"
-                  label="Detail page"
-                  minHeight={220}
-                  scriptSrc={adsConfig.detailBanner}
-                />
-
                 <div className="tab-content active">
                   <h3 className="mb-2">About {selectedHole.name}</h3>
                   <p>{selectedHole.description}</p>
@@ -726,13 +682,6 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
           <p>Copyright 2026 SwimHoles.com. All rights reserved.</p>
         </div>
       </footer>
-
-      <PropellerAdSlot
-        className="propeller-sticky-mobile"
-        label="Sticky mobile"
-        minHeight={60}
-        scriptSrc={adsConfig.mobileSticky}
-      />
     </>
   );
 }
