@@ -1,5 +1,5 @@
 import type {IncomingMessage, ServerResponse} from 'node:http';
-import {createSwimHoleStore} from './_lib/storage';
+import {createSwimHoleStore} from './_lib/storage.js';
 
 export default async function handler(_req: IncomingMessage, res: ServerResponse) {
   try {

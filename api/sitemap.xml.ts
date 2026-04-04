@@ -1,6 +1,6 @@
 import type {IncomingMessage, ServerResponse} from 'node:http';
-import {buildSitemapXml} from '../src/lib/sitemap';
-import {createSwimHoleStore} from './_lib/storage';
+import {buildSitemapXml} from '../src/lib/sitemap.js';
+import {createSwimHoleStore} from './_lib/storage.js';
 
 function getSiteUrl(req: IncomingMessage) {
   const envSiteUrl = process.env.SITE_URL || process.env.VITE_SITE_URL || process.env.APP_URL;
