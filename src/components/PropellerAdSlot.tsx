@@ -23,7 +23,6 @@ export default function PropellerAdSlot({
   minHeight = 250,
 }: PropellerAdSlotProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const isClient = typeof window !== 'undefined';
 
   useEffect(() => {
     if (!scriptSrc || !containerRef.current) {
@@ -46,10 +45,6 @@ export default function PropellerAdSlot({
       container.innerHTML = '';
     };
   }, [scriptSrc]);
-
-  if (!isClient) {
-    return null;
-  }
 
   if (!scriptSrc && !shouldShowDevPlaceholder(scriptSrc)) {
     return null;

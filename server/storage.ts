@@ -1,3 +1,5 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import {neon} from '@neondatabase/serverless';
 import type {Difficulty, RecordStatus, SwimHole} from '../src/types/swim-hole';
 
@@ -9,6 +11,48 @@ function toNumber(value: unknown, fallback = 0) {
 export type SwimHoleStore = {
   list(): Promise<SwimHole[]>;
 };
+
+class FileSwimHoleStore implements SwimHoleStore {
+  private filePath = path.resolve('storage', 'swim-holes.json');
+
+  private mapRecord(record: Partial<SwimHole>): SwimHole {
+    return {
+      id: toNumber(record.id),
+      slug: String(record.slug || ''),
+      name: String(record.name || ''),
+      country: String(record.country || ''),
+      countrySlug: String(record.countrySlug || ''),
+      region: String(record.region || ''),
+      regionSlug: String(record.regionSlug || ''),
+      city: String(record.city || ''),
+      citySlug: String(record.citySlug || ''),
+      description: String(record.description || ''),
+      difficulty: String(record.difficulty || 'Easy') as Difficulty,
+      depth: String(record.depth || ''),
+      bestSeason: String(record.bestSeason || ''),
+      parkingInfo: String(record.parkingInfo || ''),
+      entryFee: String(record.entryFee || ''),
+      features: Array.isArray(record.features) ? record.features.map(String) : [],
+      coordinates: String(record.coordinates || ''),
+      rating: toNumber(record.rating),
+      reviews: toNumber(record.reviews),
+      imageUrl: String(record.imageUrl || ''),
+      imageAlt: String(record.imageAlt || ''),
+      sourceUrl: String(record.sourceUrl || ''),
+      lastVerified: String(record.lastVerified || ''),
+      status: String(record.status || 'draft') as RecordStatus,
+    };
+  }
+
+  async list() {
+    const raw = await fs.readFile(this.filePath, 'utf8');
+    const records = JSON.parse(raw) as Partial<SwimHole>[];
+    return records
+      .map((record) => this.mapRecord(record))
+      .filter((record) => record.status === 'published')
+      .sort((left, right) => left.name.localeCompare(right.name));
+  }
+}
 
 class NeonSwimHoleStore implements SwimHoleStore {
   private sql = neon(process.env.DATABASE_URL!);
@@ -87,7 +131,7 @@ class NeonSwimHoleStore implements SwimHoleStore {
 
 export function createSwimHoleStore(): SwimHoleStore {
   if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is required. The public site only reads from the database.');
+    return new FileSwimHoleStore();
   }
 
   return new NeonSwimHoleStore();
