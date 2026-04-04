@@ -38,20 +38,24 @@ const defaultFilters: Filters = {
 };
 
 const primaryFeatureFilters = ['Free Entry', 'Dog Friendly', 'Cliff Jumping'];
+const runtimeEnv =
+  typeof import.meta !== 'undefined' && import.meta.env
+    ? import.meta.env
+    : ({} as Record<string, string | undefined>);
 const adsConfig = {
-  homeBanner: import.meta.env.VITE_PROPELLER_HOME_BANNER_SRC,
-  directoryTop: import.meta.env.VITE_PROPELLER_DIRECTORY_TOP_SRC,
-  directoryInline: import.meta.env.VITE_PROPELLER_DIRECTORY_INLINE_SRC,
-  detailBanner: import.meta.env.VITE_PROPELLER_DETAIL_SRC,
-  mobileSticky: import.meta.env.VITE_PROPELLER_STICKY_SRC,
+  homeBanner: runtimeEnv.VITE_PROPELLER_HOME_BANNER_SRC,
+  directoryTop: runtimeEnv.VITE_PROPELLER_DIRECTORY_TOP_SRC,
+  directoryInline: runtimeEnv.VITE_PROPELLER_DIRECTORY_INLINE_SRC,
+  detailBanner: runtimeEnv.VITE_PROPELLER_DETAIL_SRC,
+  mobileSticky: runtimeEnv.VITE_PROPELLER_STICKY_SRC,
 };
 
 function getSiteUrl() {
   if (typeof window !== 'undefined') {
-    return import.meta.env.VITE_SITE_URL || window.location.origin;
+    return runtimeEnv.VITE_SITE_URL || window.location.origin;
   }
 
-  return import.meta.env.VITE_SITE_URL || 'https://www.swimholes.com';
+  return runtimeEnv.VITE_SITE_URL || 'https://www.swimholes.com';
 }
 
 function formatCardDescription(description: string) {
