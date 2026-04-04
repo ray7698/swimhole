@@ -3,6 +3,11 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/*.ts": {
+      "includeFiles": "storage/swim-holes.json"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/swim-holes",

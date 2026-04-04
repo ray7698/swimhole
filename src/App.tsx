@@ -43,10 +43,11 @@ const runtimeEnv =
   typeof import.meta !== 'undefined' && import.meta.env
     ? import.meta.env
     : ({} as Record<string, string | undefined>);
+const adsEnabled = runtimeEnv.VITE_ENABLE_ADS === 'true';
 const adsConfig = {
-  bannerSrc: runtimeEnv.VITE_MONETAG_BANNER_SRC,
-  bodyTagSrc: runtimeEnv.VITE_MONETAG_BODY_TAG_SRC,
-  bodyTagZone: runtimeEnv.VITE_MONETAG_BODY_TAG_ZONE,
+  bannerSrc: adsEnabled ? runtimeEnv.VITE_MONETAG_BANNER_SRC : undefined,
+  bodyTagSrc: adsEnabled ? runtimeEnv.VITE_MONETAG_BODY_TAG_SRC : undefined,
+  bodyTagZone: adsEnabled ? runtimeEnv.VITE_MONETAG_BODY_TAG_ZONE : undefined,
 };
 
 function getSiteUrl() {
