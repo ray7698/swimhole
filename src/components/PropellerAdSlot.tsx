@@ -7,8 +7,13 @@ type PropellerAdSlotProps = {
   minHeight?: number;
 };
 
+const runtimeEnv =
+  typeof import.meta !== 'undefined' && import.meta.env
+    ? import.meta.env
+    : ({} as Record<string, boolean | string | undefined>);
+
 function shouldShowDevPlaceholder(scriptSrc?: string) {
-  return import.meta.env.DEV && !scriptSrc;
+  return Boolean(runtimeEnv.DEV) && !scriptSrc;
 }
 
 export default function PropellerAdSlot({
