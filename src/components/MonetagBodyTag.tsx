@@ -11,7 +11,7 @@ export default function MonetagBodyTag({scriptSrc, zoneId}: MonetagBodyTagProps)
       return;
     }
 
-    const target = document.documentElement || document.body;
+    const target = document.body;
     if (!target) {
       return;
     }
