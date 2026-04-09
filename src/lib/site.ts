@@ -15,6 +15,7 @@ export type SeoPayload = {
   canonicalPath: string;
   ogType: 'website' | 'article';
   structuredData: object;
+  keywords?: string;
 };
 
 export type RegionRecord = {
@@ -178,15 +179,62 @@ export function getCityByRoute(route: Route, holes: SwimHole[]) {
   return getCities(holes).find((city) => city.regionSlug === route.regionSlug && city.citySlug === route.citySlug) ?? null;
 }
 
+export function getRegionKeywords(region: string) {
+  return [
+    `swimming holes in ${region}`,
+    `hidden swimming holes in ${region}`,
+    `natural pools in ${region}`,
+    `waterfalls you can swim in ${region}`,
+    `${region} swimming holes`
+  ];
+}
+
+export function getCityKeywords(city: string, region: string) {
+  return [
+    `swimming holes near ${city}`,
+    `hidden swimming spots in ${city}`,
+    `natural pools near ${city} ${region}`,
+    `swimming near ${city}`,
+    `best places to swim in ${city}`
+  ];
+}
+
+export function getHoleKeywords(holeName: string, city: string, region: string) {
+  return [
+    `${holeName} swimming hole`,
+    `swimming at ${holeName}`,
+    `how to visit ${holeName}`,
+    `${holeName} guide`,
+    `${region} swimming holes`,
+    `swimming near ${city}`
+  ];
+}
+
 export function buildSeoPayload(route: Route, selectedHole: SwimHole | null, siteUrl: string, holes: SwimHole[]): SeoPayload {
   const region = getRegionByRoute(route, holes);
   const city = getCityByRoute(route, holes);
+  const currentYear = new Date().getFullYear();
 
   let title = "SwimHoles - Discover America's Most Beautiful Swimming Holes";
   let description = 'Find the best natural swimming holes across the United States.';
   let canonicalPath = '/';
   let ogType: 'website' | 'article' = 'website';
-  let structuredData: object = {
+  let keywords: string | undefined = undefined;
+  
+  const breadcrumbList: any = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: absoluteUrl('/', siteUrl),
+      }
+    ]
+  };
+
+  let structuredData: any = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'SwimHoles',
@@ -197,39 +245,80 @@ export function buildSeoPayload(route: Route, selectedHole: SwimHole | null, sit
     title = 'SwimHoles - Directory of Swimming Holes';
     description = 'Browse swimming holes by state, difficulty, and features like cliff jumping or free entry.';
     canonicalPath = '/directory';
-    structuredData = {
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: 'SwimHoles Directory',
-      url: absoluteUrl('/directory', siteUrl),
-      description,
-    };
+    breadcrumbList.itemListElement.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Directory',
+      item: absoluteUrl('/directory', siteUrl),
+    });
+    structuredData = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'SwimHoles Directory',
+        url: absoluteUrl('/directory', siteUrl),
+        description,
+      },
+      breadcrumbList
+    ];
   }
 
   if (route.page === 'region' && region) {
-    title = `${region.region} Swimming Holes - SwimHoles`;
-    description = `Explore swimming holes in ${region.region}, ${region.country}. Discover spots, directions, and trip details.`;
+    const kw = getRegionKeywords(region.region);
+    keywords = kw.join(', ');
+    title = `Best Swimming Holes in ${region.region} (${currentYear} Guide) | Hidden Spots & Natural Pools`;
+    description = `Discover the best swimming holes in ${region.region}, including hidden spots, natural pools, and waterfalls you can swim in. Plan your perfect summer escape.`;
     canonicalPath = getPathForRegion(region);
-    structuredData = {
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: `${region.region} Swimming Holes`,
-      url: absoluteUrl(canonicalPath, siteUrl),
-      description,
-    };
+    breadcrumbList.itemListElement.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: region.region,
+      item: absoluteUrl(canonicalPath, siteUrl),
+    });
+    structuredData = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: `Best Swimming Holes in ${region.region}`,
+        url: absoluteUrl(canonicalPath, siteUrl),
+        description,
+        keywords: keywords
+      },
+      breadcrumbList
+    ];
   }
 
   if (route.page === 'city' && city) {
-    title = `${city.city} Swimming Holes - SwimHoles`;
-    description = `Explore swimming holes near ${city.city}, ${city.region}. Find local wild swim spots and trip information.`;
+    const kw = getCityKeywords(city.city, city.region);
+    keywords = kw.join(', ');
+    title = `Best Swimming Holes Near ${city.city}, ${city.region} (${currentYear} Guide) | Hidden Spots & Natural Pools`;
+    description = `Discover the best swimming holes near ${city.city}, ${city.region}, including hidden spots, natural pools, and waterfalls you can swim in. Plan your perfect summer escape.`;
     canonicalPath = getPathForCity(city);
-    structuredData = {
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: `${city.city} Swimming Holes`,
-      url: absoluteUrl(canonicalPath, siteUrl),
-      description,
-    };
+    breadcrumbList.itemListElement.push(
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: city.region,
+        item: absoluteUrl(getPathForRegion({countrySlug: city.countrySlug, regionSlug: city.regionSlug}), siteUrl),
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: city.city,
+        item: absoluteUrl(canonicalPath, siteUrl),
+      }
+    );
+    structuredData = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: `Swimming Holes Near ${city.city}, ${city.region}`,
+        url: absoluteUrl(canonicalPath, siteUrl),
+        description,
+        keywords: keywords
+      },
+      breadcrumbList
+    ];
   }
 
   if (route.page === 'about') {
@@ -246,29 +335,58 @@ export function buildSeoPayload(route: Route, selectedHole: SwimHole | null, sit
   }
 
   if (route.page === 'detail' && selectedHole) {
-    title = `${selectedHole.name} - SwimHoles`;
-    description = selectedHole.description;
+    const holeName = selectedHole.name;
+    const kw = getHoleKeywords(holeName, selectedHole.city, selectedHole.region);
+    keywords = kw.join(', ');
+    title = `${holeName} Swimming Hole, ${selectedHole.region} (${currentYear}) | Complete Guide`;
+    description = `Discover everything you need to know about swimming at ${holeName} in ${selectedHole.city}, ${selectedHole.region}. Plan your perfect summer escape to this hidden natural pool.`;
     canonicalPath = getPathForHole(selectedHole);
     ogType = 'article';
     const [latitude, longitude] = selectedHole.coordinates.split(',').map((item) => Number(item.trim()));
-    structuredData = {
-      '@context': 'https://schema.org',
-      '@type': 'TouristAttraction',
-      name: selectedHole.name,
-      description: selectedHole.description,
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: selectedHole.city,
-        addressRegion: selectedHole.region,
-        addressCountry: selectedHole.country,
+    
+    breadcrumbList.itemListElement.push(
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: selectedHole.region,
+        item: absoluteUrl(getPathForRegion(selectedHole), siteUrl),
       },
-      geo: {
-        '@type': 'GeoCoordinates',
-        latitude,
-        longitude,
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: selectedHole.city,
+        item: absoluteUrl(getPathForCity(selectedHole), siteUrl),
       },
-      url: absoluteUrl(getPathForHole(selectedHole), siteUrl),
-    };
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: holeName,
+        item: absoluteUrl(canonicalPath, siteUrl),
+      }
+    );
+
+    structuredData = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'TouristAttraction',
+        name: holeName,
+        description: description,
+        keywords: keywords,
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: selectedHole.city,
+          addressRegion: selectedHole.region,
+          addressCountry: selectedHole.country,
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude,
+          longitude,
+        },
+        url: absoluteUrl(canonicalPath, siteUrl),
+      },
+      breadcrumbList
+    ];
   }
 
   if (route.page === 'not-found') {
@@ -284,7 +402,7 @@ export function buildSeoPayload(route: Route, selectedHole: SwimHole | null, sit
     };
   }
 
-  return {title, description, canonicalPath, ogType, structuredData};
+  return {title, description, canonicalPath, ogType, structuredData, keywords};
 }
 
 export function getPrerenderPaths(holes: SwimHole[]) {

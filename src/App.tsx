@@ -109,6 +109,15 @@ function applySeo(route: Route, selectedHole: SwimHole | null, holes: SwimHole[]
 
   document.title = seo.title;
   setMetaTag('name', 'description', seo.description);
+  
+  if (seo.keywords) {
+    setMetaTag('name', 'keywords', seo.keywords);
+  } else {
+    // Remove if previously set by another route
+    const el = document.querySelector(`meta[name="keywords"]`);
+    if (el) el.remove();
+  }
+
   setMetaTag('property', 'og:title', seo.title);
   setMetaTag('property', 'og:description', seo.description);
   setMetaTag('property', 'og:type', seo.ogType);
@@ -525,14 +534,14 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
                 <button className="btn btn-outline mb-4" onClick={() => navigate('directory')} type="button">
                   Back to Directory
                 </button>
-                <h1 className="mb-2">{selectedRegion.region} Swimming Holes</h1>
-                <p className="mb-4" style={{color: 'var(--gray-500)'}}>
-                  Explore swimming holes in {selectedRegion.region}, {selectedRegion.country}.
+                <h1 className="mb-2">Discover the Best Swimming Holes in {selectedRegion.region}</h1>
+                <p className="mb-4" style={{color: 'var(--gray-500)', lineHeight: '1.6'}}>
+                  Searching for a refreshing summer escape? Discover the <strong>best swimming holes in {selectedRegion.region}</strong>, from serene mountain creeks to family-friendly state park lakes. Whether you're looking for <strong>hidden swimming holes in {selectedRegion.region}</strong>, seeking out pristine <strong>natural pools in {selectedRegion.region}</strong>, or hoping to find <strong>waterfalls you can swim in {selectedRegion.region}</strong>, we have you covered. Browse our list below to explore <strong>swimming/swim holes near {selectedRegion.region}</strong>'s top cities and natural areas.
                 </p>
                 <div className="states-grid mb-4">
                   {selectedRegion.holes.map((hole) => (
                     <button className="state-item" key={hole.citySlug} onClick={() => navigateToPath(getPathForCity(hole))} type="button">
-                      {hole.city}
+                      Explore {hole.city} Holes
                     </button>
                   ))}
                 </div>
@@ -558,11 +567,11 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
                   }
                   type="button"
                 >
-                  Back to {selectedCity.region}
+                  Back to all {selectedCity.region} spots
                 </button>
-                <h1 className="mb-2">{selectedCity.city} Swimming Holes</h1>
-                <p className="mb-4" style={{color: 'var(--gray-500)'}}>
-                  Explore swimming holes near {selectedCity.city}, {selectedCity.region}.
+                <h1 className="mb-2">Guide to the Best Swimming Holes Near {selectedCity.city}, {selectedCity.region}</h1>
+                <p className="mb-4" style={{color: 'var(--gray-500)', lineHeight: '1.6'}}>
+                  Looking for the perfect spot to cool off? Explore the most refreshing <strong>swimming/swim holes near {selectedCity.region}/{selectedCity.city}</strong>. Whether you're a local resident or visiting the area, this guide will help you uncover <strong>hidden swimming spots in {selectedCity.city}</strong> and discover the most beautiful <strong>natural pools near {selectedCity.city}</strong>. Remember to check local conditions before planning your trip!
                 </p>
                 <SwimCardGrid holes={selectedCity.holes} onSelect={(selected) => navigate('detail', selected)} />
               </>
@@ -572,80 +581,92 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
 
         <div className={`page ${route.page === 'detail' && (!catalogLoading || holes.length > 0) ? '' : 'hidden'}`}>
           <div className="container section">
-            <button className="btn btn-outline mb-4" onClick={() => navigate('directory')} type="button">
-              Back to Directory
-            </button>
             {selectedHole ? (
-              <div>
-                {getImageMarkup(selectedHole, 'detail-hero')}
-                <div className="detail-header">
-                  <div>
-                    <h1 style={{fontSize: '2.5rem', marginBottom: 5}}>{selectedHole.name}</h1>
-                    <p style={{color: 'var(--gray-500)', fontSize: '1.1rem'}}>
-                      {selectedHole.city}, {selectedHole.region}
-                    </p>
-                    <div style={{color: '#f59e0b', fontWeight: 500, marginTop: 10}}>{ratingLabel(selectedHole)}</div>
+              <>
+                <button className="btn btn-outline mb-4" onClick={() => navigateToPath(getPathForCity(selectedHole))} type="button">
+                  Back to {selectedHole.city} Holes
+                </button>
+                <div>
+                  {getImageMarkup(selectedHole, 'detail-hero')}
+                  <div className="detail-header">
+                    <div>
+                      <h1 style={{fontSize: '2.5rem', marginBottom: 5}}>Exploring {selectedHole.name} in {selectedHole.city}</h1>
+                      <p style={{color: 'var(--gray-500)', fontSize: '1.1rem'}}>
+                        {selectedHole.city}, {selectedHole.region}
+                      </p>
+                      <div style={{color: '#f59e0b', fontWeight: 500, marginTop: 10}}>{ratingLabel(selectedHole)}</div>
+                    </div>
+                    <a className="btn btn-primary" href={getMapLink(selectedHole.coordinates)} rel="noreferrer" target="_blank">
+                      Get Directions
+                    </a>
                   </div>
-                  <a className="btn btn-primary" href={getMapLink(selectedHole.coordinates)} rel="noreferrer" target="_blank">
-                    Get Directions
-                  </a>
-                </div>
 
-                <div className="tags" style={{marginBottom: 30}}>
-                  <button className="tag tag-button" onClick={() => navigateToPath(getPathForRegion(selectedHole))} type="button">
-                    {selectedHole.region}
-                  </button>
-                  <button className="tag tag-button" onClick={() => navigateToPath(getPathForCity(selectedHole))} type="button">
-                    {selectedHole.city}
-                  </button>
-                  {selectedHole.features.map((feature) => (
-                    <span className="tag" key={feature}>
-                      {feature}
-                    </span>
-                  ))}
-                </div>
+                  <div className="tags" style={{marginBottom: 30}}>
+                    <button className="tag tag-button" onClick={() => navigateToPath(getPathForRegion(selectedHole))} type="button">
+                      {selectedHole.region} Swimming
+                    </button>
+                    <button className="tag tag-button" onClick={() => navigateToPath(getPathForCity(selectedHole))} type="button">
+                      {selectedHole.city} Spots
+                    </button>
+                    {selectedHole.features.map((feature) => (
+                      <span className="tag" key={feature}>
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
 
-                <div className="detail-info-grid">
-                  <div className="info-item">
-                    <h4>Difficulty</h4>
-                    <p>{selectedHole.difficulty}</p>
+                  <div className="detail-info-grid">
+                    <div className="info-item">
+                      <h4>Difficulty</h4>
+                      <p>{selectedHole.difficulty}</p>
+                    </div>
+                    <div className="info-item">
+                      <h4>Best Season</h4>
+                      <p>{selectedHole.bestSeason}</p>
+                    </div>
+                    <div className="info-item">
+                      <h4>Depth</h4>
+                      <p>{selectedHole.depth}</p>
+                    </div>
+                    <div className="info-item">
+                      <h4>Entry Fee</h4>
+                      <p>{selectedHole.entryFee}</p>
+                    </div>
+                    <div className="info-item">
+                      <h4>Parking</h4>
+                      <p>{selectedHole.parkingInfo}</p>
+                    </div>
+                    <div className="info-item">
+                      <h4>Last Verified</h4>
+                      <p>{selectedHole.lastVerified || 'Not set yet'}</p>
+                    </div>
                   </div>
-                  <div className="info-item">
-                    <h4>Best Season</h4>
-                    <p>{selectedHole.bestSeason}</p>
-                  </div>
-                  <div className="info-item">
-                    <h4>Depth</h4>
-                    <p>{selectedHole.depth}</p>
-                  </div>
-                  <div className="info-item">
-                    <h4>Entry Fee</h4>
-                    <p>{selectedHole.entryFee}</p>
-                  </div>
-                  <div className="info-item">
-                    <h4>Parking</h4>
-                    <p>{selectedHole.parkingInfo}</p>
-                  </div>
-                  <div className="info-item">
-                    <h4>Last Verified</h4>
-                    <p>{selectedHole.lastVerified || 'Not set yet'}</p>
-                  </div>
-                </div>
-                <div className="tab-content active">
-                  <h3 className="mb-2">About {selectedHole.name}</h3>
-                  <p>{selectedHole.description}</p>
-                  <p className="mt-4" style={{color: 'var(--gray-500)', fontSize: '0.9rem'}}>
-                    Coordinates: {selectedHole.coordinates}
-                  </p>
-                  {selectedHole.sourceUrl ? (
-                    <p className="mt-4">
-                      <a className="link-inline" href={selectedHole.sourceUrl} rel="noreferrer" target="_blank">
-                        Source listing
-                      </a>
+                  <div className="tab-content active seo-content">
+                    <h2 className="mb-2">{selectedHole.name} Guide: Can You Swim Here?</h2>
+                    <p className="mb-4">
+                      Are you wondering about <strong>swimming at {selectedHole.name}</strong>? {selectedHole.description}
                     </p>
-                  ) : null}
+                    
+                    <h2 className="mb-2 mt-4">How to Visit {selectedHole.name}</h2>
+                    <p className="mb-4">
+                      Planning a trip? Here are some essential tips for <strong>how to visit {selectedHole.name}</strong>. The exact coordinates are <strong>{selectedHole.coordinates}</strong>. Make sure you enter these into your GPS to find the most accurate trailhead or access point. Look out for parking signage, as {selectedHole.parkingInfo.toLowerCase()}.
+                    </p>
+
+                    <h2 className="mb-2 mt-4">Safety Tips & Local Warnings</h2>
+                    <p className="mb-4">
+                      While exploring the <strong>{selectedHole.name} guide</strong>, safety should always be your top priority. Natural swimming holes face rapidly changing water conditions. Entry fees are currently listed as: {selectedHole.entryFee}. Be mindful of your surroundings and any posted warnings when visiting.
+                    </p>
+
+                    {selectedHole.sourceUrl ? (
+                      <p className="mt-4">
+                        <a className="link-inline" href={selectedHole.sourceUrl} rel="noreferrer" target="_blank">
+                          View original listing & more info
+                        </a>
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
+              </>
             ) : null}
           </div>
         </div>
