@@ -10,6 +10,7 @@
     "build": "vite build && tsx scripts/postbuild.ts",
     "preview": "vite preview",
     "start": "tsx server/index.ts",
+    "submit-indexnow": "tsx scripts/submit-indexnow.ts",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

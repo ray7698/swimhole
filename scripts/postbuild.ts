@@ -8,6 +8,7 @@ import {buildSitemapXml} from '../src/lib/sitemap';
 import {buildSeoPayload, getHoleByRoute, getPrerenderPaths, getRouteFromPathname} from '../src/lib/site';
 import {createSwimHoleStore} from '../server/storage';
 import type {SwimHole} from '../src/types/swim-hole';
+import {submitToIndexNow} from './submit-indexnow';
 
 dotenv.config();
 
@@ -69,6 +70,8 @@ async function main() {
 
   writeSitemapAndRobots(holes);
   console.log(`Prerendered ${routes.length} routes from database records and generated sitemap/robots.`);
+
+  await submitToIndexNow(siteUrl);
 }
 
 void main();
