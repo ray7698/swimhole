@@ -42,10 +42,13 @@ const primaryFeatureFilters = ['Free Entry', 'Dog Friendly', 'Cliff Jumping'];
 const runtimeEnv =
   typeof import.meta !== 'undefined' && import.meta.env
     ? import.meta.env
-    : ({} as Record<string, string | undefined>);
+    : (typeof process !== 'undefined' && process.env
+      ? process.env
+      : ({} as Record<string, string | undefined>));
 const adsEnabled = runtimeEnv.VITE_ENABLE_ADS === 'true';
 const adsConfig = {
   bannerSrc: adsEnabled ? runtimeEnv.VITE_MONETAG_BANNER_SRC : undefined,
+  bannerZone: adsEnabled ? runtimeEnv.VITE_MONETAG_BANNER_ZONE : undefined,
   bodyTagSrc: adsEnabled ? runtimeEnv.VITE_MONETAG_BODY_TAG_SRC : undefined,
   bodyTagZone: adsEnabled ? runtimeEnv.VITE_MONETAG_BODY_TAG_ZONE : undefined,
 };
@@ -427,14 +430,18 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
             </div>
           </section>
 
-          <div className="container">
-            <PropellerAdSlot
-              className="propeller-hero"
-              label="Top banner"
-              minHeight={160}
-              scriptSrc={adsConfig.bannerSrc}
-            />
-          </div>
+          {route.page === 'home' && (
+            <div className="container">
+              <PropellerAdSlot
+                key="home-banner"
+                className="propeller-hero"
+                label="Top banner"
+                minHeight={160}
+                scriptSrc={adsConfig.bannerSrc}
+                zoneId={adsConfig.bannerZone}
+              />
+            </div>
+          )}
 
           <section className="section container">
             <div className="flex justify-between items-center mb-4">
@@ -517,6 +524,17 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
               </div>
             </div>
 
+            {route.page === 'directory' && (
+              <PropellerAdSlot
+                key="directory-banner"
+                className="propeller-directory"
+                label="Directory banner"
+                minHeight={160}
+                scriptSrc={adsConfig.bannerSrc}
+                zoneId={adsConfig.bannerZone}
+              />
+            )}
+
             {catalogLoading ? <div className="status-banner">Refreshing catalog...</div> : null}
             <SwimCardGrid holes={filteredHoles} onSelect={(selected) => navigate('detail', selected)} />
             {filteredHoles.length === 0 ? (
@@ -538,6 +556,16 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
                 <p className="mb-4" style={{color: 'var(--gray-500)', lineHeight: '1.6'}}>
                   Searching for a refreshing summer escape? Discover the <strong>best swimming holes in {selectedRegion.region}</strong>, from serene mountain creeks to family-friendly state park lakes. Whether you're looking for <strong>hidden swimming holes in {selectedRegion.region}</strong>, seeking out pristine <strong>natural pools in {selectedRegion.region}</strong>, or hoping to find <strong>waterfalls you can swim in {selectedRegion.region}</strong>, we have you covered. Browse our list below to explore <strong>swimming/swim holes near {selectedRegion.region}</strong>'s top cities and natural areas.
                 </p>
+                {route.page === 'region' && selectedRegion && (
+                  <PropellerAdSlot
+                    key={`region-banner-${selectedRegion.regionSlug}`}
+                    className="propeller-region"
+                    label="Region banner"
+                    minHeight={160}
+                    scriptSrc={adsConfig.bannerSrc}
+                    zoneId={adsConfig.bannerZone}
+                  />
+                )}
                 <div className="states-grid mb-4">
                   {selectedRegion.holes.map((hole) => (
                     <button className="state-item" key={hole.citySlug} onClick={() => navigateToPath(getPathForCity(hole))} type="button">
@@ -573,6 +601,16 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
                 <p className="mb-4" style={{color: 'var(--gray-500)', lineHeight: '1.6'}}>
                   Looking for the perfect spot to cool off? Explore the most refreshing <strong>swimming/swim holes near {selectedCity.region}/{selectedCity.city}</strong>. Whether you're a local resident or visiting the area, this guide will help you uncover <strong>hidden swimming spots in {selectedCity.city}</strong> and discover the most beautiful <strong>natural pools near {selectedCity.city}</strong>. Remember to check local conditions before planning your trip!
                 </p>
+                {route.page === 'city' && selectedCity && (
+                  <PropellerAdSlot
+                    key={`city-banner-${selectedCity.citySlug}`}
+                    className="propeller-city"
+                    label="City banner"
+                    minHeight={160}
+                    scriptSrc={adsConfig.bannerSrc}
+                    zoneId={adsConfig.bannerZone}
+                  />
+                )}
                 <SwimCardGrid holes={selectedCity.holes} onSelect={(selected) => navigate('detail', selected)} />
               </>
             ) : null}
@@ -614,6 +652,17 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
                       </span>
                     ))}
                   </div>
+
+                  {route.page === 'detail' && selectedHole && (
+                    <PropellerAdSlot
+                      key={`detail-banner-${selectedHole.id}`}
+                      className="propeller-detail"
+                      label="Detail banner"
+                      minHeight={160}
+                      scriptSrc={adsConfig.bannerSrc}
+                      zoneId={adsConfig.bannerZone}
+                    />
+                  )}
 
                   <div className="detail-info-grid">
                     <div className="info-item">
@@ -683,6 +732,19 @@ export default function App({initialHoles = [], initialPath}: AppProps) {
               </p>
               <p>That keeps the main site lean and the editing workflow private on your machine.</p>
             </div>
+
+            {route.page === 'about' && (
+              <div style={{marginTop: 30}}>
+                <PropellerAdSlot
+                  key="about-banner"
+                  className="propeller-about"
+                  label="About banner"
+                  minHeight={160}
+                  scriptSrc={adsConfig.bannerSrc}
+                  zoneId={adsConfig.bannerZone}
+                />
+              </div>
+            )}
           </div>
         </div>
 
